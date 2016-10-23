@@ -23,9 +23,8 @@ fun isProofRuleListSound(lst) =
 	end
 
 datatype Proof = Axiom of Sequent | UnaryInf of Proof * Sequent | BinaryInf of Proof * Proof * Sequent;
+(* Part 2 *)
 
-fun isValidProof( Axiom(x) , rules) = if unify(x, rules) = nil then false else true
-	|isValidProof( UnaryInf(xs, x), rules) = 
 
 
 
