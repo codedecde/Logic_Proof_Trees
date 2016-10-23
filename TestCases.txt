@@ -1,0 +1,9 @@
+val k = AxiomR([], IMP(ATOM("x"), IMP(ATOM("y"), ATOM("x"))));
+val s = AxiomR([], IMP( IMP( ATOM("x"), IMP(ATOM("y"), ATOM("z") ) ), IMP(IMP(ATOM("x"), ATOM("y")), IMP(ATOM("x"), ATOM("z") ) ) ) );
+val n = AxiomR([], IMP( IMP(NOT(ATOM("y")), NOT(ATOM("x")) ) , IMP( IMP(NOT(ATOM("y")), ATOM("x") ), ATOM("y") ) ) );
+val mp = BinaryInfR ( ([],ATOM("x") ),  ([], IMP(ATOM("x"), ATOM("y") ) ) , ([], ATOM("y") ) );
+val r = AxiomR([], IMP(ATOM("x") , ATOM("x")))
+val dt_back = UnaryInfR ( ([], IMP( ATOM("x"), ATOM("y") ) ) , ([ATOM("x")], ATOM("y") ) )
+val dt_front = UnaryInfR ( ([ATOM("x")], ATOM("y") ), ([], IMP( ATOM("x"), ATOM("y") ) ) )
+val t_front = BinaryInfR( ([], IMP( ATOM("x"), ATOM("y") ) )  , ([], IMP( ATOM("y"), ATOM("z") ) ) , ([], IMP( ATOM("x"), ATOM("z") ) ))
+val z = isProofRuleListSound([k,s,n,mp,r,dt_back,dt_front,t_front]);
