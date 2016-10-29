@@ -25,7 +25,12 @@ fun isProofRuleListSound(lst) =
 datatype Proof = Axiom of Sequent | UnaryInf of Proof * Sequent | BinaryInf of Proof * Proof * Sequent;
 (* Part 2 *)
 
-
-
+fun getSequent(Axiom(x)) = x
+	|getSequent(UnaryInf(y,x)) = x
+	|getSequent(BinaryInf(z,y,x)) = x
+	
+fun isValidProofTree(Axiom(x), proofRuleList) = unify(x, proofRuleList) 
+	|isValidProofTree(UnaryInf((x,y)), proofRuleList) = if unify(y,getSequent(x), proofRuleList) andalso isValidProofTree(y) then true else false
+	|isValidBinaryInf((x,y,z), proofRuleList) =  if unify(z, getSequent(y), getSequent(x), proofRuleList) andalso isValidProofTree(y) andalso isValidProofTree(x) then true else false;
 
 
