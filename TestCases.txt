@@ -7,3 +7,21 @@ val dt_back = UnaryInfR ( ([], IMP( ATOM("x"), ATOM("y") ) ) , ([ATOM("x")], ATO
 val dt_front = UnaryInfR ( ([ATOM("x")], ATOM("y") ), ([], IMP( ATOM("x"), ATOM("y") ) ) )
 val t_front = BinaryInfR( ([], IMP( ATOM("x"), ATOM("y") ) )  , ([], IMP( ATOM("y"), ATOM("z") ) ) , ([], IMP( ATOM("x"), ATOM("z") ) ))
 val z = isProofRuleListSound([k,s,n,mp,r,dt_back,dt_front,t_front]);
+
+Part 2:
+
+val x = IMP( IMP( ATOM("p"), ATOM("p")), IMP( ATOM("q"), IMP( ATOM("p"), ATOM("p") ) ) );
+val r = IMP(ATOM("X"), IMP(ATOM("Y"), ATOM("X") ) );
+val r2 = IMP(ATOM("X"), ATOM("X"))
+val z = unifyProp(x,r2);
+
+val k = AxiomR(([], IMP(ATOM("X"), IMP( ATOM("Y"), ATOM("X")))));
+val r = AxiomR(([], IMP(ATOM("X"), ATOM("X"))));
+val mp = BinaryInfR(([], ATOM("X")), ([], IMP(ATOM("X"), ATOM("Y"))), ([], ATOM("Y")) );
+val proofrules = [k,r,mp];
+
+val l1 = Axiom( ([], IMP( IMP( ATOM("p"), ATOM("p") ) , IMP(ATOM("q"), IMP( ATOM("p"), ATOM("p") ) ) ) ) );
+val l2 = Axiom( ([], IMP (ATOM("p"), ATOM("p") ) ) );
+val n1 = BinaryInf( (l1, l2, ([],IMP( ATOM("q"), IMP( ATOM("p"), ATOM("q") ) )) ) );
+
+val it = isValidProofTree(n1, proofrules);
