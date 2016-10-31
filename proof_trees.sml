@@ -69,7 +69,7 @@ local
 		|combine(SOME(x), SOME(y)) = SOME(x@y);
 	
 	fun unifyPropListHelper(nil , nil ) = SOME(nil)
-		|unifyPropListHelper(x, nil) = NONE
+		|unifyPropListHelper(x, nil) = SOME(nil)
 		|unifyPropListHelper(nil, y) = NONE
 		|unifyPropListHelper(x::xs, y::ys) = combine(unifyProp(x,y), unifyPropListHelper(xs,ys));
 in
@@ -139,4 +139,3 @@ fun isValidProofTree(Axiom(x) , proofRuleList ) = if unifyProofRule( AxiomR(x), 
 	|isValidProofTree(BinaryInf((x,y,z)), proofRuleList) = if (unifyProofRule( BinaryInfR( (getSequent(x), getSequent(y), z) ), proofRuleList ) orelse unifyProofRule( BinaryInfR( (getSequent(y), getSequent(x), z) ), proofRuleList ) ) andalso isValidProofTree(x, proofRuleList) andalso isValidProofTree(y, proofRuleList) then true else false;
 
 (* Test cases *)
-

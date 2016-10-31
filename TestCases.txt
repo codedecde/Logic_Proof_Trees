@@ -15,6 +15,7 @@ val r = IMP(ATOM("X"), IMP(ATOM("Y"), ATOM("X") ) );
 val r2 = IMP(ATOM("X"), ATOM("X"))
 val z = unifyProp(x,r2);
 
+(* Example in Question *)
 val k = AxiomR(([], IMP(ATOM("X"), IMP( ATOM("Y"), ATOM("X")))));
 val r = AxiomR(([], IMP(ATOM("X"), ATOM("X"))));
 val mp = BinaryInfR(([], ATOM("X")), ([], IMP(ATOM("X"), ATOM("Y"))), ([], ATOM("Y")) );
@@ -22,6 +23,43 @@ val proofrules = [k,r,mp];
 
 val l1 = Axiom( ([], IMP( IMP( ATOM("p"), ATOM("p") ) , IMP(ATOM("q"), IMP( ATOM("p"), ATOM("p") ) ) ) ) );
 val l2 = Axiom( ([], IMP (ATOM("p"), ATOM("p") ) ) );
-val n1 = BinaryInf( (l1, l2, ([],IMP( ATOM("q"), IMP( ATOM("p"), ATOM("q") ) )) ) );
+val n1 = BinaryInf( (l1, l2, ([],IMP( ATOM("q"), IMP( ATOM("p"), ATOM("p") ) )) ) );
 
 val it = isValidProofTree(n1, proofrules);
+
+(* Transitivity *)
+val X = ATOM("X");
+val Y = ATOM("Y");
+val Z = ATOM("Z");
+val pr1 = BinaryInfR( ([],IMP(X,Y)), ([],IMP(Y,Z)), ([],IMP(X,Z)) );
+val pr2 = AxiomR( ([], IMP(X,Y)) );
+val a = ATOM("a");
+val b = ATOM("b");
+val c = ATOM("c");
+val p = BinaryInf( Axiom( ([], IMP(b,c)) ), Axiom( ([], IMP(a,b)) ), ([], IMP(a,c)));
+
+val it = isValidProofTree(p, [pr1,pr2]);
+
+(* Contrapositive *)
+val X = ATOM("X");
+val Y = ATOM("Y");
+val Z = ATOM("Z");
+val K = AxiomR(([], IMP( X , IMP( Y, X) ) ) );
+val N1 = IMP(NOT(Y), NOT(X));
+val N2 = IMP( IMP(NOT(Y) , X) , Y);
+val N = AxiomR( ([], IMP( N1 , N2 ) ) );
+val S = AxiomR(([], IMP( IMP(X, IMP(Y,Z)) , IMP( IMP(X,Y), IMP(X,Z) ))));
+val DT1 = UnaryInfR( (([], IMP(X,Y)) , ([X], Y) ) );
+val DT2 = UnaryInfR( (([X], Y) , ([], IMP(X,Y) ) ) );
+val T = BinaryInfR( ( ([], IMP(X,Y) ), ([], IMP(Y,Z)), ([], IMP(X,Z) ) ) );
+val propRules = [K,N,S,DT1,DT2,T];
+
+val p = ATOM("p");
+val q = ATOM("q");
+val L1 = Axiom( ([], IMP( IMP(NOT(q), NOT(p) ) , IMP( IMP(NOT(q), p ), q ) ) ) );
+val L2 = Axiom( ([IMP(NOT(q), NOT(p))] , IMP (p, IMP(NOT(q), p) ) ) );
+val N1 = UnaryInf( ( L1, ([IMP(NOT(q), NOT(p))] , IMP( IMP(NOT(q), p), q) ) ) );
+val N2 = BinaryInf((N1, L2 , ([IMP(NOT(q), NOT(p))], IMP(p, q) ) ) );
+val N2 = UnaryInf( ( N2, ([], IMP( IMP(NOT(q), NOT(p) ) , IMP(p,q) ) ) ) );
+
+val it = isValidProofTree( N2, propRules);
