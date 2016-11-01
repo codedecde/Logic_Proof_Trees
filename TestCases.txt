@@ -25,7 +25,7 @@ val l1 = Axiom( ([], IMP( IMP( ATOM("p"), ATOM("p") ) , IMP(ATOM("q"), IMP( ATOM
 val l2 = Axiom( ([], IMP (ATOM("p"), ATOM("p") ) ) );
 val n1 = BinaryInf( (l1, l2, ([],IMP( ATOM("q"), IMP( ATOM("p"), ATOM("p") ) )) ) );
 
-val it = isValidProofTree(n1, proofrules);
+val it1 = isValidProofTree(n1, proofrules);
 
 (* Transitivity *)
 val X = ATOM("X");
@@ -38,7 +38,7 @@ val b = ATOM("b");
 val c = ATOM("c");
 val p = BinaryInf( Axiom( ([], IMP(b,c)) ), Axiom( ([], IMP(a,b)) ), ([], IMP(a,c)));
 
-val it = isValidProofTree(p, [pr1,pr2]);
+val it2 = isValidProofTree(p, [pr1,pr2]);
 
 (* Contrapositive *)
 val X = ATOM("X");
@@ -62,4 +62,4 @@ val N1 = UnaryInf( ( L1, ([IMP(NOT(q), NOT(p))] , IMP( IMP(NOT(q), p), q) ) ) );
 val N2 = BinaryInf((N1, L2 , ([IMP(NOT(q), NOT(p))], IMP(p, q) ) ) );
 val N2 = UnaryInf( ( N2, ([], IMP( IMP(NOT(q), NOT(p) ) , IMP(p,q) ) ) ) );
 
-val it = isValidProofTree( N2, propRules);
+val it3 = isValidProofTree( N2, propRules);

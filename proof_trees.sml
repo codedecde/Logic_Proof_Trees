@@ -94,7 +94,11 @@ in
 		end	
 end
 
-fun unifyAxiom(x : Sequent, y : Sequent ) = if unifySequent(x,y) = [] then false else true;
+fun unifyAxiom(x : Sequent, y : Sequent ) = let 
+												val t = unifySequent(x,y); 
+											in  
+												if t = [] then NONE else SOME(t)
+											end
 
 local
 	fun combineSingle(x)(nil) = nil
@@ -107,35 +111,71 @@ end
 fun unifyUnary((x,y) : Sequent * Sequent, (a,b) : Sequent * Sequent) = let
 	val above = unifySequent(x,a);
 	val below = unifySequent(y,b);
+	val t = combineSubList(above)(below);
 in
-	if combineSubList(above)(below) = [] then false else true
+	if t = [] then NONE else SOME(t)
 end
 
 fun unifyBinary((x,y,z) : Sequent * Sequent * Sequent, (a,b,c) : Sequent * Sequent * Sequent) = let
 	val a1 = unifySequent(x,a);
 	val a2 = unifySequent(y,b);
 	val b1 = unifySequent(z,c);
+	val t = combineSubList(combineSubList(a1)(a2))(b1);
 in
-	if combineSubList(combineSubList(a1)(a2))(b1) = [] then false else true
+	if t = [] then NONE else SOME(t)
 end
 
 fun getSequent(Axiom(x)) = x
 	|getSequent(UnaryInf(y,x)) = x
 	|getSequent(BinaryInf(z,y,x)) = x;
 
-fun unifyProofRule( AxiomR(x), []) = false
-	|unifyProofRule(AxiomR(x), AxiomR(y)::xs) = if unifyAxiom(x,y) then true else unifyProofRule(AxiomR(x), xs)
+fun unifyProofRule( AxiomR(x), []) = NONE
+	|unifyProofRule(AxiomR(x), AxiomR(y)::xs) = let
+													val t =  unifyAxiom(x,y);
+												in 
+													if isSome(t) then t else unifyProofRule(AxiomR(x), xs)
+												end
 	|unifyProofRule(AxiomR(x), y::xs) = unifyProofRule(AxiomR(x), xs)
-	|unifyProofRule(UnaryInfR(x), []) = false
-	|unifyProofRule(UnaryInfR(x), UnaryInfR(z)::xs) = if unifyUnary(x,z) then true else unifyProofRule(UnaryInfR(x), xs)
+	|unifyProofRule(UnaryInfR(x), []) = NONE
+	|unifyProofRule(UnaryInfR(x), UnaryInfR(z)::xs) = let
+														val t = unifyUnary(x,z);
+													  in 
+													  	if isSome(t) then t else unifyProofRule(UnaryInfR(x), xs)
+													  end
 	|unifyProofRule(UnaryInfR(x), y::xs) = unifyProofRule(UnaryInfR(x), xs)
-	|unifyProofRule(BinaryInfR(x), []) = false
-	|unifyProofRule(BinaryInfR(x), BinaryInfR(z)::xs) = if unifyBinary(x,z) then true else unifyProofRule(BinaryInfR(x), xs)
+	|unifyProofRule(BinaryInfR(x), []) = NONE
+	|unifyProofRule(BinaryInfR(x), BinaryInfR(z)::xs) = let 
+															val t = unifyBinary(x,z); 
+														in 
+															if isSome(t) then t else unifyProofRule(BinaryInfR(x), xs)
+														end
 	|unifyProofRule(BinaryInfR(x), y::xs) = unifyProofRule(BinaryInfR(x), xs)
 
 
-fun isValidProofTree(Axiom(x) , proofRuleList ) = if unifyProofRule( AxiomR(x), proofRuleList) then true else false
-	|isValidProofTree(UnaryInf((x,y)), proofRuleList) = if unifyProofRule( UnaryInfR((getSequent(x), y)), proofRuleList) andalso isValidProofTree(x, proofRuleList) then true else false
-	|isValidProofTree(BinaryInf((x,y,z)), proofRuleList) = if (unifyProofRule( BinaryInfR( (getSequent(x), getSequent(y), z) ), proofRuleList ) orelse unifyProofRule( BinaryInfR( (getSequent(y), getSequent(x), z) ), proofRuleList ) ) andalso isValidProofTree(x, proofRuleList) andalso isValidProofTree(y, proofRuleList) then true else false;
+local
+	fun firstNotNone(x,y) = if isSome(x) then x else y;
 
+	(* The root matching is at the top of the return list*)	
+	fun isValidProofTreeHelper(Axiom(x) , proofRuleList ) =  let 
+			val t = unifyProofRule( AxiomR(x), proofRuleList)
+		in 
+			if isSome(t) then SOME([getOpt(t,nil)]) else NONE
+		end
+		|isValidProofTreeHelper(UnaryInf((x,y)), proofRuleList) = let 
+			val below = unifyProofRule( UnaryInfR((getSequent(x), y)), proofRuleList);
+			val above = isValidProofTreeHelper(x, proofRuleList);
+		in 
+			if isSome(above) andalso isSome(below) then  SOME( getOpt(below,nil)::getOpt(above,nil) ) else NONE
+		end
+		|isValidProofTreeHelper(BinaryInf((x,y,z)), proofRuleList) = let 
+			val above1 = isValidProofTreeHelper(x, proofRuleList);
+			val above2 = isValidProofTreeHelper(y, proofRuleList);
+			val below1 = unifyProofRule( BinaryInfR( (getSequent(x), getSequent(y), z) ), proofRuleList );
+			val below2 = unifyProofRule( BinaryInfR( (getSequent(y), getSequent(x), z) ), proofRuleList );			
+		in
+			if isSome(above1) andalso isSome(above2) andalso ( isSome(below1) orelse isSome(below2) ) then SOME(getOpt(firstNotNone(below1, below2), nil) :: getOpt(above1,nil) @ getOpt(above2,nil))  else NONE
+		end
+ in
+	fun isValidProofTree(x, proofRuleList) = isSome(isValidProofTreeHelper(x,proofRuleList) )
+end
 (* Test cases *)
